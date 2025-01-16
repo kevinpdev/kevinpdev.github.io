@@ -7,7 +7,7 @@ function getHtmlFiles(dir) {
 }
 
 const srcDir = path.join(__dirname, "src");
-const distDir = path.join(__dirname, "dist");
+const distDir = path.join(__dirname, "docs");
 const layoutDir = path.join(__dirname, "layouts");
 const htmlFiles = getHtmlFiles(srcDir);
 

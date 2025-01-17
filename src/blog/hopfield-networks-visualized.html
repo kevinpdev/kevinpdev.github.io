@@ -1,0 +1,676 @@
+<!--TEMPLATE:blog.html-->
+
+<h1>Hopfield Networks Visualized</h1>
+
+<p>
+    Hopfield networks were first introduced in 1982 by John Hopfield [1]. They are differ from many modern 
+    neural network architectures. A few of the difference are:
+</p>
+<ul>
+    <li>They use hebbian learning instead of backpropagtion via gradient descent</li>
+    <li>They contain non-differentiable operations in the network</li>
+    <li>They are recurrent in nature</li>
+</ul>
+<br/>
+
+<!--Primer Example-->
+<h2>Simple Example</h2>
+<p>
+    Let's start with a simple example. Hopfield networks are fully connected neural networks, with bidirectional weights.
+    The neuron states are bipolar, either -1 or 1. This differs from most neural networks where the neurons assume continuous
+    values. The weights are calculated using the Hebbian learning rule.
+
+    They are typically used to perform associative recall. This means that given a noisy or partial input, the network can 
+    recall the associated memory. [2]
+</p>
+<br/>
+<br/>
+<div id="grid-viz-1"></div>
+<div style="text-align: center;">
+    <small >Example of a 3x3 grid "memory"</small>
+</div>
+<br/>
+<br/>
+<p>
+    The following visual shows an example of a Hopfield network through the process of recalling a memory. The network has been trained with 
+    this "memory", which is just a greyscale image with 9 pixels.
+</p>
+<p>
+    Given any corrupted or partial version of this input, the hopfield network can "recall" the input overtime through asyncronous updates to the network.
+    The network recalls the memory by updating the states <math-field readonly>s_i</math-field> of each neuron overtime so that they converge to the memory state.
+</p>
+<br/>
+<br/>
+<div id="network-container-1"></div>
+<br/>
+<br/>
+
+
+<!--Training-->
+<h2>Training</h2>
+<p>
+    Like other neural networks, the hopfield network consists of nodes and weights.
+    The weight matrix of a hopfield network is set with the following rule:
+</p>
+<br/>
+<br/>
+<div style="text-align: center;">
+    <math-field style="font-size: 26px;" readonly>W = \frac{1}{n}\sum_{i}^{n}s_{i}s_{i}^{T}</math-field>
+</div>  
+<br/>
+<br/>
+
+<p>
+    where <math-field readonly>s_i</math-field> is the state value vector of the network's 
+    neurons and <math-field readonly>n</math-field> is the number of nodes. 
+    This is essentially a weighted average of the outer product of each "memory"
+    where a memory is a configuration of neuron states. This outputs a symmetric weight matrix, 
+    where <thead></thead> number at ij corresponds to the weight value between nodes i and j. 
+    The weights on the diagonal of the matrix are set to 0.
+    This is becuase Hopfield networks do not have self-connections.
+</p>
+<br/>
+<br/>
+
+<div style="text-align: center;">
+    <math-field style="font-size: 26px;" readonly>
+        W_{ij} = W_{ji} \quad \forall i,j : i \; != \; j
+    </math-field> <br/>
+    <math-field style="font-size: 26px;" readonly>
+        W_{ij} = 0 \quad \forall i,j : i = j
+    </math-field>
+</div>
+<br/>
+<br/>
+
+<p>We can perform this exercise with our dummy example and we get the following:</p>
+<br/>
+<br/>
+
+<div style="text-align: center;">
+    <math-field style="font-size: 16px;" readonly>
+        W=
+        \begin{bmatrix}
+        -1 \\
+        1 \\
+        -1 \\
+        -1 \\
+        1 \\
+        -1 \\
+        -1 \\
+        1 \\
+        1
+        \end{bmatrix}
+        \cdot
+        \begin{bmatrix}
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 1 & 1
+        \end{bmatrix}
+        =
+        \begin{bmatrix}
+        1 & -1 & 1 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 1 & 1 \\
+        1 & -1 & 1 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        1 & -1 & 1 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 1 & 1 \\
+        1 & -1 & 1 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        1 & -1 & 1 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 1 & 1 \\
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 1 & 1
+        \end{bmatrix}
+    </math-field>
+</div>  
+<br/>
+<br/>
+
+<p>Then we set the diagonal to zero:</p>
+<br/>
+<br/>
+
+<div style="text-align: center;margin:30px;">
+    <math-field style="font-size: 16px;" readonly>
+        W=
+        \begin{bmatrix}
+        0 & -1 & 1 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        -1 & 0 & -1 & -1 & 1 & -1 & -1 & 1 & 1 \\
+        1 & -1 & 0 & 1 & -1 & 1 & 1 & -1 & -1 \\
+        1 & -1 & 1 & 0 & -1 & 1 & 1 & -1 & -1 \\
+        -1 & 1 & -1 & -1 & 0 & -1 & -1 & 1 & 1 \\
+        1 & -1 & 1 & 1 & -1 & 0 & 1 & -1 & -1 \\
+        1 & -1 & 1 & 1 & -1 & 1 & 0 & -1 & -1 \\
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 0 & 1 \\
+        -1 & 1 & -1 & -1 & 1 & -1 & -1 & 1 & 0
+        \end{bmatrix}
+    </math-field>
+</div>
+<br/>
+
+<pre class="language-python"><code>
+import numpy as np
+
+# n is the number of nodes (neurons) in the network
+# also the size of the memory
+X = np.array([[-1,1,-1], [-1,1,-1], [-1,1,1]])
+n = X.flatten().shape[0]
+
+weights = np.outer(sample, sample) / n
+np.fill_diagonal(weights, 0)</code></pre>
+<br/>
+<br/>
+
+
+<p>
+    Now our simple hopfield network is trained and ready to recall the memory.
+    We can walk through the process of recalling the memory of the network using asyncronous updates.
+</p>
+
+<br/>
+<br/>
+
+
+<!--Recall-->
+<h2>Recall</h2>
+<p>
+    The recall process starts with a partial or corrupted "memory", and slowly reconstructs the full memory.
+    In our case, we only have one memory, so the network will converge to the same state regardless of what we start with.
+    We will choose a randomly initialized state vector to start with.
+</p>
+<br/>
+<br/>
+<div style="text-align: center;margin:30px;">
+    <math-field style="font-size: 16px;" readonly>
+        s = \begin{bmatrix}
+            0.03 \\
+            0.37 \\
+            0.18 \\
+            0.78 \\
+            0.38 \\
+            -0.82 \\
+            0.02 \\
+            -0.38 \\
+            0.68
+            \end{bmatrix}
+    </math-field>
+</div>
+<div id="grid-viz-2"></div>
+<div style="text-align: center;">
+    <small>Corrupted starting memory</small>
+</div>
+<br/>
+<br/>
+<p>
+    At each time step, a node is chosen at random and its state is updated. It is updated 
+    according to the following rule [3]:
+</p>
+<br/>
+<br/>
+<div style="text-align: center;margin:30px;">
+    <math-field style="font-size: 26px;" readonly>
+        s_i = \begin{cases}
+        1 &  \sum_{j}^{n}W_{ij}s_j > 0 \\
+        -1 & \sum_{j}^{n}W_{ij}s_j \le 0 \\
+        \end{cases}
+    </math-field>
+</div>
+<br/>
+<br/>
+<pre class="language-python"><code>
+i = np.random.randint(n)
+net_input = np.dot(weights[i], states)
+states[i] = 1 if net_input > 0 else -1</code></pre>
+<br/>
+<br/>
+<p>
+    The s vector is repeatedly updated until the network converges to a stable state.
+    The following visual shows the network converging to the memory state.
+</p>
+<br/>
+<br/>
+<div id="network-container-2"></div>
+<br/>
+
+<!--Energy-->
+<h2>Energy</h2>
+<p>
+    The convergence of the network to a stable state can be thought of as a minimization of the "energy" function of the network.
+    Throughout the training process, energy should be non increasing at each time step. The energy function is defined as:
+</p>
+<br/>
+<br/>
+<div style="text-align: center;margin:30px;">
+    <math-field style="font-size: 26px;" readonly>
+        E=-\frac{1}{2}\sum_{i=1}^{N}\sum_{j=1}^{N}W_{ij}s_is_j
+    </math-field>
+</div>
+<br/>
+<br/>
+<p>Or in vector form:</p>
+<br/>
+<br/>
+<div style="text-align: center;margin:30px;">
+    <math-field style="font-size: 26px;" readonly>
+        E=-\frac{1}{2}s^TWs
+    </math-field>
+</div>
+<br/>
+<br/>
+<pre class="language-python"><code>
+states = states.reshape(-1,1)
+energy = -0.5 * np.dot(states.T, np.dot(weights, states))</code></pre>
+<br/>
+<br/>
+    
+<p>
+    The energy of the network can be thought of as how "stable" the network is. The lower the energy, the more stable, and 
+    the closer the network is to converging on a memory state. Hopfield networks are designed to minimize this energy function.
+</p>
+<br/>
+<br/>
+<div id="energy-plot"></div>
+<div style="text-align: center;">
+    <small>Energy over time</small>
+</div>
+<br/>
+<br/>
+
+<h2>Thoughts</h2>
+<p>
+    Hopfield networks are particularly interesting to me becuase they are both non-differentiable, and as a recurrent network, they allow
+    for variable numbers of computations before converging on a solution. This is in contrast to feedforward networks which have a fixed number of computations.
+
+</p>
+<p>
+    Be sure to check out the sources below to see the inspirations and resources used in this article. The code for this hopfield 
+    network is on my <a href="https://github.com/kevinpdev" target="_blank">github</a>.
+</p>
+
+<h2>Sources</h2>
+<ul>
+    <li>[1] <a href="https://www.pnas.org/doi/epdf/10.1073/pnas.79.8.2554">Neural networks and physical systems with emergent collective computational abilities</a></li>
+    <li>[2] <a href="https://www.geeksforgeeks.org/hopfield-neural-network/">Hopfield Neural Network</a></li>
+    <li>[3] <a href="https://medium.com/@serbanliviu/hopfield-nets-and-the-brain-e5880070cdba">Hopfield nets and the brain</a></li>
+    <li>[4] <a href="https://www.youtube.com/watch?v=piF6D6CQxUw">Hopfield network: How are memories stored in neural networks?</a></li>
+</ul>
+
+
+
+
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+function HopfieldNetworkWithSlider(selector, options) {
+    const {
+        nodeRadius = 10,     // Radius of each node
+        circleRadius = 200,  // Radius of the circle arrangement
+        statesOverTime = {}, // JSON dictionary of states and idx_updated
+        weightValues = []    // 2D array of weights
+    } = options;
+
+
+    const numNodes = statesOverTime[Object.keys(statesOverTime)[0]].states.length;
+    const gridDim = Math.sqrt(numNodes); // Should be 3 for 9 nodes
+    const cellSize = 30; // Make cells larger
+    const gridPadding = 10;
+
+    const padding=15
+
+    const width = (2 * circleRadius + 2 * nodeRadius + padding * 2);  // padding on both sides
+    const height = (2 * circleRadius + 2 * nodeRadius + padding * 2); // padding on top and bottom
+
+    // Create state vector display above visualizations
+    const vectorContainer = d3.select(selector)
+        .append("div")
+        .style("font-family", "monospace")
+        .style("text-align", "center")
+        .style("margin", "10px 0")
+        .style("font-size", "14px")
+        .style("padding", "10px")
+        .style("background", "#f5f5f5")
+        .style("border-radius", "4px")
+        .style("width", "fit-content")
+        .style("margin", "20px auto");
+
+
+    // Create container for both visualizations
+    const container = d3.select(selector)
+        .append("div")
+        .style("display", "flex")
+        .style("justify-content", "space-between")
+        .style("width", "100%");
+
+    // Create left container for circle
+    const circleContainer = container
+        .append("div")
+        .style("width", "40%");
+
+    // Create right container for grid
+    const gridContainer = container
+        .append("div")
+        .style("width", "40%");
+
+    // Create SVG for circle (existing code modified)
+    const svg = circleContainer
+        .append("svg")
+        .attr("width", "100%")
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+
+    // Update grid SVG size
+    const gridSvg = gridContainer
+        .append("svg")
+        .attr("width", "100%")
+        .attr("viewBox", `0 0 ${(gridDim * cellSize) + (gridPadding * 2)} ${(gridDim * cellSize) + (gridPadding * 2)}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+
+    // Update grid cells
+    const cells = gridSvg.selectAll("rect")
+        .data(d3.range(numNodes))
+        .enter()
+        .append("rect")
+        .attr("x", d => (d % gridDim) * cellSize + gridPadding)
+        .attr("y", d => Math.floor(d / gridDim) * cellSize + gridPadding)
+        .attr("width", cellSize - 1)
+        .attr("height", cellSize - 1)
+        .attr("fill", "#F2F2F2"); // Light gray default
+
+
+    // Calculate node positions
+    const angleStep = (2 * Math.PI) / numNodes;
+    const nodes = Array.from({ length: numNodes }, (_, i) => {
+        const angle = i * angleStep;
+        return {
+            id: i,
+            x: padding + circleRadius + Math.cos(angle) * circleRadius + nodeRadius,
+            y: padding + circleRadius + Math.sin(angle) * circleRadius + nodeRadius
+        };
+    });
+
+    // Generate weight values if not provided
+    const weights = weightValues.length
+        ? weightValues
+        : Array.from({ length: numNodes }, () =>
+              Array.from({ length: numNodes }, () => Math.random() * 2 - 1)
+          );
+
+    // Draw weights (lines between nodes, only for i < j to avoid overlap)
+    const weightLines = svg.selectAll(".weight-line")
+        .data(nodes.flatMap((source, i) => 
+            nodes.map((target, j) => ({ source, target, i, j, weight: weights[i][j] }))
+        ))
+        .enter()
+        .filter(d => d.i < d.j)
+        .append("line")
+        .attr("class", "weight-line")
+        .attr("x1", d => d.source.x)
+        .attr("y1", d => d.source.y)
+        .attr("x2", d => d.target.x)
+        .attr("y2", d => d.target.y)
+        .attr("stroke", "#E0E0E0")  // Slightly darker default
+        .attr("stroke-width", 0.5);
+
+
+    // Create slider and initialize states
+    const timeSteps = Object.keys(statesOverTime).map(Number).sort((a, b) => a - b);
+    let currentStep = timeSteps[0];
+
+    // Create slider container with buttons
+    const sliderContainer = d3.select(selector)
+        .append("div")
+        .style("display", "flex")
+        .style("justify-content", "center")
+        .style("align-items", "center")
+        .style("margin", "20px 0");
+
+    // Add back button
+    const backButton = sliderContainer
+        .append("button")
+        .style("margin", "0 10px")
+        .text("←")
+        .on("click", () => {
+            const newStep = Math.max(currentStep - 1, d3.min(timeSteps));
+            currentStep = newStep;
+            slider.property("value", newStep);
+            updateVisualization(statesOverTime[newStep] || {});
+        });
+
+    // Add slider
+    const slider = sliderContainer
+        .append("input")
+        .attr("type", "range")
+        .attr("min", d3.min(timeSteps))
+        .attr("max", d3.max(timeSteps))
+        .attr("step", 0.5)
+        .style("width", "60%")
+        .on("input", function () {
+            currentStep = +this.value;
+            updateVisualization(statesOverTime[currentStep] || {});
+        });
+
+    // Add forward button
+    const forwardButton = sliderContainer
+        .append("button")
+        .style("margin", "0 10px")
+        .text("→")
+        .on("click", () => {
+            const newStep = Math.min(currentStep + 1, d3.max(timeSteps));
+            currentStep = newStep;
+            slider.property("value", newStep);
+            updateVisualization(statesOverTime[newStep] || {});
+        });
+
+    // Add nodes to the SVG
+    const nodeElements = svg.selectAll("circle")
+        .data(nodes)
+        .enter()
+        .append("circle")
+        .attr("cx", d => d.x)
+        .attr("cy", d => d.y)
+        .attr("r", nodeRadius)
+        .attr("fill", "lightblue")
+        .attr("stroke", "black");
+
+    // Add node labels for states
+    const nodeLabels = svg.selectAll(".state-label")
+        .data(nodes)
+        .enter()
+        .append("text")
+        .attr("class", "state-label")
+        .attr("x", d => d.x)
+        .attr("y", d => d.y + 25)  // Increased offset from +5 to +20
+        .attr("font-size", "12px")
+        .attr("text-anchor", "middle")
+        .attr("fill", "black");
+
+    // Function to update visualization
+    function updateVisualization(data) {
+        const { states, idx_updated } = data;
+
+        if (states) {
+            // Update state vector display
+            vectorContainer.text(
+                "s = [" + 
+                states.map(s => s.toFixed(1).padStart(6)).join(" ") + 
+                "]"
+            );
+
+            // Update node labels
+            nodeLabels.text((_, i) => Number(states[i]).toFixed(1));
+            
+            // Update grid cells with light gray instead of white
+            cells.attr("fill", (d) => {
+                const value = states[d];
+                return d3.interpolateGreys(0.95 - (value * 0.95)); // Maps 0->0.95 (light gray), 1->0 (black)
+            });
+        }
+
+        // Update weights (existing code)
+        weightLines.attr("stroke", "#E0E0E0")
+            .attr("stroke-width", 0.5);
+
+        if (data.hasOwnProperty('idx_updated')) {
+            weightLines
+                .attr("stroke", d => (d.i === idx_updated || d.j === idx_updated ? "#A0A0A0" : "#E0E0E0"))
+                .attr("stroke-width", d => (d.i === idx_updated || d.j === idx_updated ? 1.2 : 0.5));
+        }
+    }
+
+
+    // Initialize with the first time step
+    updateVisualization(statesOverTime[currentStep]);
+}
+
+function GridVisualization(selector, gridArray) {
+    // Calculate dimensions
+    const gridDim = gridArray.length;
+    const cellSize = 60;
+    const padding = 10;
+    const width = (gridDim * cellSize) + (padding * 2);
+    const height = (gridDim * cellSize) + (padding * 2);
+
+    // Create centered container
+    const container = d3.select(selector)
+        .append("div")
+        .style("display", "flex")
+        .style("justify-content", "center")
+        .style("width", "100%")
+        .style("margin", "20px 0");
+
+    // Create SVG
+    const svg = container
+        .append("svg")
+        .attr("width", width)
+        .attr("height", height)
+        .attr("viewBox", `0 0 ${width} ${height}`)
+        .attr("preserveAspectRatio", "xMidYMid meet");
+
+    // Create cells
+    const cells = svg.selectAll("rect")
+        .data(gridArray.flat())
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => (i % gridDim) * cellSize + padding)
+        .attr("y", (d, i) => Math.floor(i / gridDim) * cellSize + padding)
+        .attr("width", cellSize - 1)
+        .attr("height", cellSize - 1)
+        .attr("fill", d => d3.interpolateGreys(1 - d));
+
+    return {
+        update: function(newArray) {
+            cells.data(newArray.flat())
+                .attr("fill", d => d3.interpolateGreys(1 - d));
+        }
+    };
+}
+
+function EnergyPlot(selector, data) {
+    // Configure dimensions
+    const margin = {top: 20, right: 30, bottom: 40, left: 60};
+    const width = 600 - margin.left - margin.right;
+    const height = 400 - margin.top - margin.bottom;
+
+    // Create container
+    const container = d3.select(selector)
+        .append("div")
+        .style("display", "flex")
+        .style("justify-content", "center")
+        .style("width", "100%")
+        .style("margin", "20px 0");
+
+    // Create SVG
+    const svg = container
+        .append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", `translate(${margin.left},${margin.top})`);
+
+    // Setup scales
+    const x = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.t))
+        .range([0, width]);
+
+    const y = d3.scaleLinear()
+        .domain(d3.extent(data, d => d.energy))
+        .range([height, 0]);
+
+    // Add X axis
+    const xAxis = svg.append("g")
+        .attr("transform", `translate(0,${height})`)
+        .call(d3.axisBottom(x));
+
+    xAxis.append("text")
+        .attr("x", width/2)
+        .attr("y", 35)
+        .attr("fill", "black")
+        .style("text-anchor", "middle")
+        .text("Time Step");
+
+    // Add Y axis
+    const yAxis = svg.append("g")
+        .call(d3.axisLeft(y));
+
+    yAxis.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", -45)
+        .attr("x", -height/2)
+        .attr("fill", "black")
+        .style("text-anchor", "middle")
+        .text("Energy");
+
+    // Create line generator
+    const line = d3.line()
+        .x(d => x(d.t))
+        .y(d => y(d.energy));
+
+    // Add the line path
+    const path = svg.append("path")
+        .datum(data)
+        .attr("fill", "none")
+        .attr("stroke", "steelblue")
+        .attr("stroke-width", 1.5)
+        .attr("d", line);
+
+    return {
+        update: function(newData) {
+            // Update scales
+            x.domain(d3.extent(newData, d => d.t));
+            y.domain(d3.extent(newData, d => d.energy));
+            
+            // Update axes
+            xAxis.transition().duration(300).call(d3.axisBottom(x));
+            yAxis.transition().duration(300).call(d3.axisLeft(y));
+            
+            // Update line
+            path.datum(newData)
+                .transition()
+                .duration(300)
+                .attr("d", line);
+        }
+    };
+}
+
+// Example usage
+const statesOverTime = {"1": {"states": [0.029781474627919913, 0.3689154950476847, 0.18233015742257552, 0.780708141894424, 0.3788337220635203, -0.8175700468320348, 0.02234234271468516, -0.38332139578956204, 0.6832019989853488], "t": 1}, "2": {"idx_updated": 5}, "3": {"states": [0.029781474627919913, 0.3689154950476847, 0.18233015742257552, 0.780708141894424, 0.3788337220635203, -1.0, 0.02234234271468516, -0.38332139578956204, 0.6832019989853488], "t": 3}, "4": {"idx_updated": 0}, "5": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, 0.780708141894424, 0.3788337220635203, -1.0, 0.02234234271468516, -0.38332139578956204, 0.6832019989853488], "t": 5}, "6": {"idx_updated": 0}, "7": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, 0.780708141894424, 0.3788337220635203, -1.0, 0.02234234271468516, -0.38332139578956204, 0.6832019989853488], "t": 7}, "8": {"idx_updated": 3}, "9": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 0.3788337220635203, -1.0, 0.02234234271468516, -0.38332139578956204, 0.6832019989853488], "t": 9}, "10": {"idx_updated": 4}, "11": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, 0.02234234271468516, -0.38332139578956204, 0.6832019989853488], "t": 11}, "12": {"idx_updated": 6}, "13": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 13}, "14": {"idx_updated": 3}, "15": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 15}, "16": {"idx_updated": 6}, "17": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 17}, "18": {"idx_updated": 4}, "19": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 19}, "20": {"idx_updated": 5}, "21": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 21}, "22": {"idx_updated": 5}, "23": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 23}, "24": {"idx_updated": 6}, "25": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 25}, "26": {"idx_updated": 0}, "27": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 27}, "28": {"idx_updated": 3}, "29": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 29}, "30": {"idx_updated": 0}, "31": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 31}, "32": {"idx_updated": 3}, "33": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 33}, "34": {"idx_updated": 5}, "35": {"states": [-1.0, 0.3689154950476847, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 35}, "36": {"idx_updated": 1}, "37": {"states": [-1.0, 1.0, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, -0.38332139578956204, 0.6832019989853488], "t": 37}, "38": {"idx_updated": 7}, "39": {"states": [-1.0, 1.0, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, 1.0, 0.6832019989853488], "t": 39}, "40": {"idx_updated": 6}, "41": {"states": [-1.0, 1.0, 0.18233015742257552, -1.0, 1.0, -1.0, -1.0, 1.0, 0.6832019989853488], "t": 41}, "42": {"idx_updated": 2}, "43": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 0.6832019989853488], "t": 43}, "44": {"idx_updated": 5}, "45": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 0.6832019989853488], "t": 45}, "46": {"idx_updated": 8}, "47": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 47}, "48": {"idx_updated": 5}, "49": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 49}, "50": {"idx_updated": 3}, "51": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 51}, "52": {"idx_updated": 1}, "53": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 53}, "54": {"idx_updated": 6}, "55": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 55}, "56": {"idx_updated": 3}, "57": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 57}, "58": {"idx_updated": 0}, "59": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 59}, "60": {"idx_updated": 7}, "61": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 61}, "62": {"idx_updated": 3}, "63": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 63}, "64": {"idx_updated": 2}, "65": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 65}, "66": {"idx_updated": 0}, "67": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 67}, "68": {"idx_updated": 2}, "69": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 69}, "70": {"idx_updated": 4}, "71": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 71}, "72": {"idx_updated": 8}, "73": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 73}, "74": {"idx_updated": 4}, "75": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 75}, "76": {"idx_updated": 4}, "77": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 77}, "78": {"idx_updated": 4}, "79": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 79}, "80": {"idx_updated": 3}, "81": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 81}, "82": {"idx_updated": 8}, "83": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 83}, "84": {"idx_updated": 8}, "85": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 85}, "86": {"idx_updated": 1}, "87": {"states": [-1.0, 1.0, -1.0, -1.0, 1.0, -1.0, -1.0, 1.0, 1.0], "t": 87}}
+const energyHistory = [{"t": 4, "energy": -0.8496615684113193}, {"t": 6, "energy": -1.26877824890563}, {"t": 8, "energy": -1.26877824890563}, {"t": 10, "energy": -1.5}, {"t": 12, "energy": -1.5}, {"t": 14, "energy": -1.5}, {"t": 16, "energy": -1.5}, {"t": 18, "energy": -1.5}, {"t": 20, "energy": -1.5}, {"t": 22, "energy": -1.5}, {"t": 24, "energy": -1.5}, {"t": 26, "energy": -1.5}, {"t": 28, "energy": -1.5}, {"t": 30, "energy": -1.5}, {"t": 32, "energy": -1.5}, {"t": 34, "energy": -1.5}, {"t": 36, "energy": -1.5}, {"t": 38, "energy": -1.5}, {"t": 40, "energy": -1.5}, {"t": 42, "energy": -1.5}, {"t": 44, "energy": -1.5}, {"t": 46, "energy": -1.5}, {"t": 48, "energy": -1.5}, {"t": 50, "energy": -1.5}]
+HopfieldNetworkWithSlider("#network-container-1", {
+    circleRadius: 150,
+    statesOverTime: statesOverTime
+});
+HopfieldNetworkWithSlider("#network-container-2", {
+    circleRadius: 150,
+    statesOverTime: statesOverTime
+});
+
+GridVisualization("#grid-viz-1", [
+    [0, 1, 0],
+    [0, 1, 0],
+    [0, 1, 1]
+]);
+
+GridVisualization("#grid-viz-2", [
+    [0.03, 0.369, 0.18],
+    [0.78, 0.38, -0.82],
+    [0.02, -.38, .68]
+]);
+
+
+EnergyPlot("#energy-plot", energyHistory);
+</script>

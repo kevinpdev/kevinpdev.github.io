@@ -3,7 +3,9 @@ const path = require("path");
 
 // Function to get all .html files in the src/ directory
 function getHtmlFiles(dir) {
-  return fs.readdirSync(dir).filter((file) => file.endsWith(".html"));
+  return fs
+    .readdirSync(dir)
+    .filter((file) => file.endsWith(".html") || file.endsWith(".css"));
 }
 
 const srcDir = path.join(__dirname, "src");
@@ -13,6 +15,7 @@ const htmlFiles = getHtmlFiles(srcDir);
 
 console.log("HTML files in src/:", htmlFiles);
 
+// Loop through each HTML file in the src/ directory
 for (const file of htmlFiles) {
   console.log(`Building ${file}...`);
   const filePath = path.join(srcDir, file);
@@ -28,14 +31,42 @@ for (const file of htmlFiles) {
       "utf-8"
     );
     const newFileContent = templateContent.replace("<!--CONTENT-->", content);
-
-    // Ensure the dist directory exists
     fs.mkdirSync(distDir, { recursive: true });
-    //write new file to dist/file
     fs.writeFileSync(`${distDir}/${file}`, newFileContent);
   } else {
-    console.error("Template file not found in index.html");
+    fs.mkdirSync(distDir, { recursive: true });
+    fs.writeFileSync(`${distDir}/${file}`, content);
   }
 }
 
+// Loop through each HTML file in the src/blog directory
+const blogDir = path.join(srcDir, "blog");
+const blogFiles = getHtmlFiles(blogDir);
+
+console.log("HTML files in src/blog/:", blogFiles);
+
+for (const file of blogFiles) {
+  console.log(`Building blog/${file}...`);
+  const filePath = path.join(blogDir, file);
+  const content = fs.readFileSync(filePath, "utf-8");
+  // Extract the template file name using a regular expression
+  const templateMatch = content.match(/<!--TEMPLATE:(.+)-->/);
+  if (templateMatch && templateMatch[1]) {
+    const templateFileName = templateMatch[1].trim();
+
+    // Read the template file
+    const templateContent = fs.readFileSync(
+      `${layoutDir}/${templateFileName}`,
+      "utf-8"
+    );
+    const newFileContent = templateContent.replace("<!--CONTENT-->", content);
+
+    // Ensure the dist/blog directory exists
+    fs.mkdirSync(path.join(distDir, "blog"), { recursive: true });
+    // Write new file to dist/blog/file
+    fs.writeFileSync(path.join(distDir, "blog", file), newFileContent);
+  } else {
+    console.error("Template file not found in blog/index.html");
+  }
+}
 console.log("Build complete!");

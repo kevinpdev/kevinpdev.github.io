@@ -1,0 +1,159 @@
+/* Minimal Developer Blog Theme */
+
+/* Import Google Fonts */
+@import url("https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap");
+
+/* General Reset */
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+blockquote,
+ul,
+ol,
+figure,
+pre,
+code {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body {
+  font-family: "Roboto Mono", monospace;
+  line-height: 1.6;
+  color: #333;
+  background-color: #f9f9f9;
+  padding: 1rem;
+  max-width: 800px;
+  margin: auto;
+  font-size: 18px;
+}
+
+/* Typography */
+h1,
+h2,
+h3 {
+  font-family: "Roboto Mono", monospace;
+  color: #222;
+  margin-bottom: 1rem;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  border-bottom: 2px solid #ddd;
+  padding-bottom: 0.5rem;
+}
+
+h2 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-top: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+  font-weight: 400;
+  margin-top: 1.5rem;
+}
+
+p {
+  margin-bottom: 1rem;
+  font-family: "Roboto Mono", sans-serif;
+}
+
+blockquote {
+  font-style: italic;
+  color: #666;
+  border-left: 4px solid #ddd;
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+}
+
+code {
+  font-family: "Roboto Mono", monospace;
+  background: #f4f4f4;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  color: #c7254e;
+}
+
+pre {
+  font-family: "Roboto Mono", monospace;
+  background: #f4f4f4;
+  padding: 1rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+/* Links */
+a {
+  color: #007acc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Lists */
+ul,
+ol {
+  margin-left: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+li {
+  margin-bottom: 0.5rem;
+  padding-left: 0.5rem;
+  position: relative;
+  list-style-type: disc;
+}
+
+/* Images */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 1rem 0;
+}
+
+/* Table */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1.5rem 0;
+}
+
+table th,
+table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: left;
+}
+
+table th {
+  background-color: #f4f4f4;
+  font-weight: 700;
+}
+
+/* Footer */
+footer {
+  font-size: 0.875rem;
+  color: #777;
+  border-top: 1px solid #ddd;
+  margin-top: 2rem;
+  padding-top: 1rem;
+  text-align: center;
+}
+
+.blog-link {
+  color: gray;
+  cursor: pointer;
+}

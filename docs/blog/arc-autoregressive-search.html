@@ -1,0 +1,191 @@
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/style.css">
+    <script defer src="//unpkg.com/mathlive"></script>
+
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+
+</head>
+<a href="/index.html">..</a><br/>
+<!--TEMPLATE:blog.html-->
+
+<h1>Attempting ARC Using Top Down Autoregressive Program Synthesis</h1>
+<p>
+    This article shares my attempt at the ARC challenge in 2024 [1]. As a spoiler, my results ended up being 3% accuracy on the private test set. 
+    While far from the 85% goal, I'm sharing this approach in hopes that it might be useful to others as a starting point 
+    or another way of thinking about the problem.
+</p>
+<br/>
+<br/>
+
+<h2>The Challenge</h2>
+<p>
+    The goal of the arc challenge is to learn a transformation or program that transforms input grids to output grids, then apply that to a test grid.
+    It is a unique benchmark in that each problem has unique transformations that have not been seen in previous examples. It tests general abstration
+    and compositionality of an algorithm. Traditional machine learning and deep learning approaches don't work well on this challenge due to the fact that
+    they require a dense sampling of samples to learn from. The ARC challenge is a very sparse sampling of the space of possible transformations.
+</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/arc-example.svg" alt="ARC Example" style="width: 70%">
+    <small>An Example ARC Problem [2]</small>
+</div>
+
+<h2>My Approach</h2>
+<p>
+    Although I tried many approaches, the one I ended up spending most of my time on was top down program synthesis via
+    autoregressive search over a DSL based on the most likely next primitive in the abstract syntax tree. 
+    I utilized Michael Hodel's <a href="https://github.com/michaelhodel/arc-dsl">arc-dsl</a>, which is a DSL for the ARC challenge.
+    It consists of python functions such as rotations, flipping, and higher order functions such as map, filter, and reduce. Hodel also provide 
+    solutions for the training set of ARC.
+</p>
+<p>
+
+</p>
+
+<h3>Programs as Trees</h3>
+<p>
+    I attempted to perform a discrete autoregressive search over the DSL that was inspired by the autoregressive inference process
+    of LLMs. To make this clearer, any ARC dsl program can be represented as a tree where the nodes are functions or literals and the branches are
+    parameters. An example solution to the problem #4c4377d9 is shown below:
+</p>
+<br/>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/arc-example-2.png" alt="ARC Example" style="width: 40%">
+    <small>Problem #4c4377d9 [1]</small>
+</div>
+<br/>
+<p>The solution to the problem can be written in code and tree form as follows:</p>
+<pre class="language-python"><code>def solve_4c4377d9(I):
+    x1 = hmirror(I)
+    O = vconcat(x1, I)
+    return O</code></pre>
+    <div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+        <img src="/assets/arc-tree-1.png" alt="ARC Example" style="width: 35%">
+    </div>
+<p>
+    Given this tree structure, we can imagine that if we had a map of next token predictions like an LLM
+    where the "token" is a function or literal, we could perform a search over the tree to find a solution.
+    Given this approach we can select the most likely next token at each step and build a solution. A dummy example
+    of this is shown below:
+</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/arc-process.png" alt="ARC Example" style="width: 60%">
+</div>
+<br/>
+
+<h3>Training the Model</h3>
+<p>
+    To train the model, I used the DSL solvers to generate datasets of each function to function/primitive transition and made a dataset using
+    a single previous token to predict the next token as well as 2 previous tokens to predict the next token. Using any larger of a context window 
+    proved to be difficult with ARC becuase of such few examples, a large context window of previous DSL primitive overfits to the training set.
+</p>
+<p>
+    I used a combination of lookup tables and deep learning models for the predictive model. Lookup tables are much faster for program search than 
+    deep learning models so I used a deep learning model to "initialize" a lookup table and then used the lookup table for the search. The deep learning model 
+    would take in attributes of all the grids and a previous primitive and predict the next token primitive. Before the search, I would use the deep learning model 
+    to predict distribution for the next token for each primitive and persist it to a lookup table. This could then be used for fast search. The training for
+    the deep learning model looked like the following:
+</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/deep-learning-1.png" alt="ARC Example" style="width: 80%">
+</div>
+<p>
+    Once the deep learning model has been trained, it is used at the beginning of each problem search to initialize a lookup table.
+</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/deep-learning-2.png" alt="ARC Example" style="width: 100%">
+</div>
+<p>
+    That lookup table is then used to generate up to 10000 trees and then selects a tree if it works on all three train grids. The attributes used to extract
+    features from the grids and initialize the lookup table were 70 attributes. Most of the attributes are 1 or 0, 1 if the attribute is true for all the grids 
+    or 0 if it is not. A subset of the feature vector attributes are shown below:
+</p>
+<pre class="language-python"><code>Grid Objs Have 2D Volume Any (Out Grids)
+Grid Objs Have 2D Volume Any (Difference of Grids)
+Grid Objects Differ In Color (In Grids)
+Grid Objects Differ In Color (Out Grids)
+Grid Objects Differ In Color (Difference of Grids)
+Grid Volume Distributed Upwards (In Grids)
+Grid Volume Distributed Upwards (Out Grids)
+Grid Strict Objs Are Volume One (In Grids)
+Grid Strict Objs Are Volume One (Out Grids)
+Grids Have At Least One Color On Edges (In Grids)
+Grids Have At Least One Color On Edges (Out Grids)
+Grids Have Frontiers (Out Grids)
+Grids Have Frontiers (In Grids)
+Grid Every Obj Has Gray Square (In Grids)
+Grid Every Obj Has Gray Square (Out Grids)
+Grids Have Object Dots (In Grids)
+Grids Have Object Dots (Out Grids)
+Grids Have Object Dots (Difference of Grids)
+Grid Has Single Obj Multicolor (In Grids)
+Grid Has Single Obj Multicolor (Out Grids)
+Grid Has Single Obj Multicolor (Difference of Grids)
+Grid Objs Have Mixed Colors (In Grids)
+Grid Objs Have Mixed Colors (Out Grids)
+Grid Objs Have Mixed Colors (Difference of Grids)
+Grid Objs Have Mixed Diagonals (In Grids)
+Grid Objs Have Mixed Diagonals (Out Grids)
+Grid Objs Have Mixed Diagonals (Difference of Grids)
+Grid Most Common Color Is Black (In Grids)
+Grid Most Common Color Is Black (Out Grids)
+Grid Most Common Color Is Black (Difference of Grids)
+Grids Have Noise (In Grids)
+Grids Have Noise (Out Grids)
+All Objs Are Subset Palette Of Largest (In Grids)
+All Objs Are Subset Palette Of Largest (Out Grids)
+Grid One Obj Is Hsymmetric And Wide And Tall (In Grids)
+Grid One Obj Is Hsymmetric And Wide And Tall (Out Grids)
+....
+    </code></pre>
+<br/>
+<br/>
+
+<h2>Intuition</h2>
+My intuition behind this approach was two fold.
+<ol>
+<li>LLMs have shown autoregressive search to be a powerful approach to solving problems. I wanted to apply this to ARC.</li>
+<li>The search space for ARC is far too large for a brute force approach. The feature vector extraction "informs" the lookup table and provides a way to prune the search space specific to each problem.</li>
+</ol>
+
+You can see my notebook for the competition <a target="_blank" href="https://www.kaggle.com/code/kevinpdev/arc-autoregressive-search">here</a>.
+
+<br/>
+<br/>
+
+
+
+<h2>Sources</h2>
+<ul>
+    <li>[1] <a href="https://arcprize.org/arc">Arc Prize</a></li>
+    <li>[2] <a href="https://lab42.global/arc/">Abstraction & Reasoning Corpus</a></li>
+    <li>[3] <a href="https://github.com/michaelhodel/arc-dsl">Hodel's Arc DSL</a></li>
+</ul>
+
+<style>
+    math-field {
+        background: transparent;
+        border: none;
+        outline: none;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        caret-color: transparent;
+    }
+
+    math-field::part(virtual-keyboard-toggle) {
+        display: none;
+    }
+</style>
+    

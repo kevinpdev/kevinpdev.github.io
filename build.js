@@ -69,4 +69,20 @@ for (const file of blogFiles) {
     console.error("Template file not found in blog/index.html");
   }
 }
+
+// Copy assets folder to dist directory
+const assetsDir = path.join(__dirname, "assets");
+if (fs.existsSync(assetsDir)) {
+  // Create assets directory in dist
+  fs.mkdirSync(path.join(distDir, "assets"), { recursive: true });
+
+  // Copy all files from assets directory
+  const assetFiles = fs.readdirSync(assetsDir);
+  for (const file of assetFiles) {
+    const srcPath = path.join(assetsDir, file);
+    const destPath = path.join(distDir, "assets", file);
+    fs.copyFileSync(srcPath, destPath);
+  }
+  console.log("Assets copied successfully!");
+}
 console.log("Build complete!");

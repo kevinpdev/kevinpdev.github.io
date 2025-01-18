@@ -1,0 +1,54 @@
+<html>
+<head>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.css" rel="stylesheet" />
+
+    <link rel="stylesheet" href="/style.css">
+    <script defer src="//unpkg.com/mathlive"></script>
+
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/plugins/line-numbers/prism-line-numbers.min.js"></script>
+
+
+</head>
+<a href="/index.html">..</a><br/>
+<!--TEMPLATE:blog.html-->
+
+<h1>Teaching Neural Networks Token Based Arithmetic</h1>
+<p>
+    This article aims to explore some of the work that has been done on teaching arithmetic to transformers.
+    LLMs have been known to struggle with arithmetic performing basic arithmetic operations reliably [1]. I'd  like
+    to explore why and run some experiments to give some insight into how we can improve the performance of LLMs on arithmetic tasks.
+</p>
+
+
+
+<h2>Sources</h2>
+<ul>
+    <li>[1] <a target="_blank" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5002356">Solving Mathematical Problems using Large Language Models: a Survey</a></li>
+    <li>[1] <a target="_blank" href="https://arxiv.org/pdf/2201.11903">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</a></li>
+
+</ul>
+
+<style>
+    math-field {
+        background: transparent;
+        border: none;
+        outline: none;
+        pointer-events: none;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        caret-color: transparent;
+    }
+
+    math-field::part(virtual-keyboard-toggle) {
+        display: none;
+    }
+</style>
+    

@@ -205,8 +205,8 @@
     \[
     \text{prediction} = 
     \begin{cases} 
-    \text{"not palindrome"} & \text{if } \sum_{i,j}(P-I'P)_{i,j}^2 > 0 \\
-    \text{"palindrome"} & \text{if } \sum_{i,j}(P-I'P)_{i,j}^2 \leq 0 
+    \text{"not palindrome"} & \text{if } \sqrt{\sum_{i,j}(P-I'P)_{i,j}^2} > 0 \\
+    \text{"palindrome"} & \text{if } \sqrt{\sum_{i,j}(P-I'P)_{i,j}^2} \leq 0 
     \end{cases}
     \]
 </math-field>
@@ -456,7 +456,7 @@ loss += regularization</code></pre>
 <p>
     We could use discrete rule mining or program synthesis to come up with the following rule:
 </p>
-<pre><code class="language-python">I''[i][j] == 1 if height(I'' - i) == j else I''[i][j] == 0</code></pre>
+<pre><code class="language-python">I''[i][j] == 1 if i + j == width(I'') - 1 else I''[i][j] == 0</code></pre>
 <br/>
 
 <p>
@@ -474,7 +474,7 @@ loss += regularization</code></pre>
     def equality_condition(a, b):
         return a == b
     def reverse_equality_condition(a, b):
-        return target_matrix.shape[0] - a == b
+        return a + b == target_matrix.shape[1] - 1
     def inequality_condition(a, b):
         return a != b
     def greater_than_condition(a, b):
@@ -534,11 +534,15 @@ with torch.no_grad():
                 model.IPrime[i][j] = 0
 
 
-print(model(tokenizer.to_matrix("abbba")))
-print(model(tokenizer.to_matrix("abbbba")))</code></pre>
+
+print("Palindrome", model(tokenizer.to_matrix("abbba")))
+print("Palindrome", model(tokenizer.to_matrix("abbbba")))
+print("Palindrome", model(tokenizer.to_matrix("dfjdsfkrejfarkja" + "dfjdsfkrejfarkja"[::-1])))
+print("Not Palindrome",model(tokenizer.to_matrix("abbbca")))
+print("Not Palindrome", model(tokenizer.to_matrix("dfjdsfkrejfarkja" + "dfjdsfkrejfarkja"[::-1] + "asd")))</code></pre>
 
 <div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
-    <img src="/assets/palindrome-10.png" alt="Output of Training" style="width: 80%">
+    <img src="/assets/palindrome-11.png" alt="Output of Training" style="width: 80%">
     <small>Extrapolation</small>
 </div>
 

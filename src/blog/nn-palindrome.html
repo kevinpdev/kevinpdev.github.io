@@ -1,0 +1,384 @@
+<!--TEMPLATE:blog.html-->
+
+<h1>Learning Algorithms with Palindromes & Neural Networks</h1>
+<p>
+    The palindrome problem is a classic introductory problem in algorithms in computer science. 
+    It involves determining whether a given string is the same when read forwards and backwards.
+    For example, the string "racecar" is a palindrome because it reads the same forwards and backwards.
+    The string "hello" is not a palindrome because it reads differently forwards and backwards.
+</p>
+
+<p>
+    A simple algorithm to solve palindromes is the two pointer algorithm, where you create a pointer at the start and end of a string,
+    and continuously move them to the middle while checking if they are pointing to the same character. This allows for an
+    O(n) time / O(1) space solution to the problem.
+</p>
+
+<pre><code class="language-python">def is_palindrome(s):
+    return s == s[::-1]</code></pre>
+
+<p>
+    Traditionally, transformers and deep learning architectures in general have struggled with algorithmic thinking [1].
+    On hypothesis is that they memorize solutions to problems rather than learning the underlying algorithm [2]. It is
+    interesting to see how well LLMs can solve certain problems, but can struggle with algorithmic problems. A quick
+    test of the palindrome problem on GPT 3.5, GPT 4o, and Gemini 1.5 Flash shows that they all can fail to solve the problem
+    if the palindrome is uncommon (unlikely to be found in the training data).
+</p>
+
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-1.png" alt="GPT 3.5 Palindrome Prompt" style="width: 80%">
+    <small>GPT 3.5 Palindrome Prompt - Incorrect Answer</small>
+</div>
+<br/>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-2.png" alt="GPT 4o Palindrome Prompt" style="width: 80%">
+    <small>GPT 4o Palindrome Prompt - Incorrect Answer</small>
+</div>
+<br/>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-3.png" alt="Gemini 1.5 Flash Palindrome Prompt" style="width: 80%">
+    <small>Gemini 1.5 Flash Prompt - Incorrect Answer</small>
+</div>
+<br/>
+
+<h2>Why?</h2>
+<p>
+    I am curious as to why LLMs and deep learning models in general are particularly bad in algorithmic thinking, and
+    want to use this article to explore very simple algorithmic problems and neural network architectures
+    to see if we can get a neural network to learn the algorithm.
+</p>
+
+
+
+<h2>Creating a Differentiable Palindrome Architecture From Scratch</h2>
+<p>
+    One interesting exercise would be to see if we could create a deep learning model that can solve the palindrome problem
+    from scratch (without training, manually initializing weights). Then we could at least be confident that there is a network
+    that could theoretically solve the problem. 
+</p>
+
+<p>
+    The actual network to do this is actually rather straightforward. We can do the equivalent of this algorithm in a
+    neural network computation graph:
+        
+</p>
+
+<ol>
+    <li>1. Create a reversed copy of given word.</li>
+    <li>2. Check if the reversed copy is equal to the original word.</li>
+</ol>
+<p>In a neural network using vectors, that might look like the following:</p>
+<ol>
+    <li>1. One hot encode the characters of the original word (into a matrix)</li>
+    <li>2. Create a reversed copy of those one hot encoded vectors (transpose the matrix)</li>
+    <li>3. Perform matrix multiplication and aggregate</li>
+</ol>
+    
+<p>
+    Let's walk through a small example to illustrate this, for the sake of simplicity we will pretend our vocabulary
+    is only "a,b,c,d" so that we can easily visualize the one hot encoding. We will use the word "aba" as our example.
+</p>
+<p>
+    First, we one hot encode the word "aba" into a matrix.
+    This is a 3x4 matrix, where each row represents a character in the word "aba".
+</p>
+<div style="text-align: center;">
+    <math-field style="font-size: 26px;" readonly>P = onehot("aba") = \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        1 & 0 & 0 & 0 \\
+        \end{bmatrix}
+    </math-field>
+</div>  
+<p>
+    Then we can reverse the rows of the matrix to get the reversed copy of the word "aba".
+    To do this we can use the reverse identity matrix I' which is a square matrix of size mxm
+    where m is the length of the word.
+</p>
+<div style="text-align: center;">
+    <math-field style="font-size: 26px;" readonly>P' = rev(onehot("aba")) = I'P = \begin{bmatrix}
+        0 & 0 & 1 \\
+        0 & 1 & 0 \\
+        1 & 0 & 0  \\
+        \end{bmatrix}
+        \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        1 & 0 & 0 & 0 \\
+        \end{bmatrix}
+    = \begin{bmatrix}
+    1 & 0 & 0 & 0 \\
+    0 & 1 & 0 & 0 \\
+    1 & 0 & 0 & 0 \\
+    \end{bmatrix}
+    </math-field>
+</div>  
+<p>
+    Finally, we can perform a matrix multiplication of the original matrix and the reversed matrix.
+    This will give us a matrix where each row is the dot product of the original and reversed vectors.
+    We can then need to find if these matrices are equal in a differentiable way. We can do this by 
+    taking the difference of the two matrices, and then calculating the frobius norm. This will give us the 
+    total difference between the word and the reversed word. We will call this d
+</p>
+<div style="text-align: center;">
+    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
+        \sum_{i,j}
+        \lparen
+        \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        1 & 0 & 0 & 0 \\
+        \end{bmatrix}
+        - \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        1 & 0 & 0 & 0 \\
+        \end{bmatrix}\rparen_{i,j}^2
+    </math-field>
+    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
+        \sum_{i,j}
+        \begin{bmatrix}
+        0 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 0 \\
+        0 & 0 & 0 & 0 \\
+        \end{bmatrix}_{i,j}^2
+    </math-field>
+    <br/>
+    <math-field style="font-size: 26px;" readonly>d = 0
+    </math-field>
+</div>  
+<p>
+    Becuase d=0, our word is a palindrome. We can repeat the process with a non-palindrome and
+    see that d will be greater than 0.
+</p>
+<div style="text-align: center;">
+    <math-field style="font-size: 26px;" readonly>P = onehot("abb") = \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        \end{bmatrix}
+    </math-field>
+    <br/>
+    <math-field style="font-size: 26px;" readonly>P' = rev(onehot("abb")) = I'P = \begin{bmatrix}
+        0 & 0 & 1 \\
+        0 & 1 & 0 \\
+        1 & 0 & 0  \\
+        \end{bmatrix}
+        \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        \end{bmatrix}
+    = \begin{bmatrix}
+    0 & 1 & 0 & 0 \\
+    0 & 1 & 0 & 0 \\
+    1 & 0 & 0 & 0 \\
+    \end{bmatrix}
+    </math-field>
+    <br/>
+    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
+        \sum_{i,j}
+        \lparen
+        \begin{bmatrix}
+        1 & 0 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        \end{bmatrix}
+        - \begin{bmatrix}
+        0 & 1 & 0 & 0 \\
+        0 & 1 & 0 & 0 \\
+        1 & 0 & 0 & 0 \\
+        \end{bmatrix}\rparen_{i,j}^2
+    </math-field>
+    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
+        \sum_{i,j}
+        \begin{bmatrix}
+        1 & -1 & 0 & 0 \\
+        0 & 0 & 0 & 0 \\
+        -1 & 1 & 0 & 0 \\
+        \end{bmatrix}_{i,j}^2
+    </math-field>
+    <br/>
+    <math-field style="font-size: 26px;" readonly>d = 1^2 + (-1)^2 + 1^2 + (-1)^2 = 4
+</div> 
+<br/>
+<p>Based on this example we can see that when d > 0, then the word is not a palindrome. When d=0, the word is a palindrome.</p>
+
+<br/>
+<h2>Putting the Model Together</h2>
+<p>Now that we have gone through some examples, lets write out the full palindrome model in math, and then codeify it.</p>
+<math-field style="font-size: 26px;" readonly>
+    \[
+    \text{prediction} = 
+    \begin{cases} 
+    \text{"not palindrome"} & \text{if } \sum_{i,j}(P-I'P)_{i,j}^2 > 0 \\
+    \text{"palindrome"} & \text{if } \sum_{i,j}(P-I'P)_{i,j}^2 \leq 0 
+    \end{cases}
+    \]
+</math-field>
+<br/>
+Where P is the one hot encoded matrix of the input word, and I' is the reversed identity matrix.
+<br/>
+<br/>
+<p>
+    It is straightforward to model this in pytorch as a neural network. The code (optimized for readability,
+    not performance) is as follows:
+</p>
+
+<pre><code class="language-python">class CustomTokenizer:
+    def __init__(self):
+        # Define the special tokens
+        self.tokens = list(string.ascii_lowercase)
+        self.token_to_id = {token: i for i, token in enumerate(self.tokens)}
+        self.id_to_token = {i: token for token, i in enumerate(self.tokens)}
+        self.vocab = set(self.tokens)
+        self.vocab_size = len(self.vocab)
+        self.max_word_length = 200
+    
+    def to_matrix(self, word):
+        rows = len(word)
+        cols = len(self.vocab)
+        matrix = torch.zeros((rows, cols), dtype=torch.float32)
+        for i, char in enumerate(word):
+            matrix[i, self.token_to_id[char]] = 1.0
+        return matrix
+    
+class PalindromeNetwork(nn.Module):
+    def __init__(self):
+        super(PalindromeNetwork, self).__init__()
+        self.tokenizer = CustomTokenizer() 
+        self.IPrime = torch.flip(torch.eye(self.tokenizer.max_word_length), [0])
+        
+
+    def forward(self, x):
+        word_len = len(x)
+        P = self.tokenizer.to_matrix(x)
+        d = torch.norm(P - self.IPrime[-1*word_len:, :word_len].matmul(P), p="fro")
+        return d
+
+# Example usage
+net = PalindromeNetwork()
+
+print("Output for 'aba': ", net("aba").item())   # 0.0
+print("Output for 'abb': ", net("abb").item())   # 2.0
+print("Output for 'cba': ", net("cba").item())   # 2.0
+print("Output for 'racecar': ", net("racecar").item())    # 0.0
+print("Output for 'saippuakivikauppias': ", net("saippuakivikauppias").item())   # 0.0</code></pre>
+
+<br/>
+<p>Using our rule of thumb from above, we can see that the model can accurately 
+    predict whether a word is a palindrome or not. It is able to 
+    predict words up to arbitrary lengths (whatever we set the max length in the tokenizer to).
+    It uses an accurate algorithm to solve the problem.
+</p>
+<br/>
+<br/>
+
+<h2>Learning the Algorithm</h2>
+<p>
+    In our demo model, there are a few key architectural decisions that we made that are highly biased towards being able
+    to solve the palindrome problem in a generalized way. 
+</p>
+<ul>
+    <li>The most obvious used a reverse identity matrix multiplication operation which tells the network that we need to perform a reverse operation.</li>
+    <li>We also do a subtraction between the reversed matrix and the original matrix which biases the algorithm to know that we need to compare those two.</li>
+    <li>We crop the reverse matrix to be able to make a comparision at the length of the word.</li>
+</ul>
+
+All of these steps are allowing the network to solve the algorithm in a generalized way, but are
+using "top down" algorithmic thinking that a human has to encode. We would like to get to a state
+to where the network "learns" the algorithm itself. We can try to run some expieriments to see how well 
+we can get the network to learn the algorithm itself.
+<br/>
+<h3>Expirement 1: Learning the Reverse Identity Matrix</h3>
+<p> 
+    We can change our neural network to have a learnable matrix instead of a reverse identity matrix
+    with the following code: 
+</p>
+<pre><code class="language-python">class PalindromeNetwork(nn.Module):
+    def __init__(self):
+        super(PalindromeNetwork, self).__init__()
+        self.tokenizer = CustomTokenizer() 
+        self.IPrime = nn.Parameter(torch.zeros(self.tokenizer.max_word_length,self.tokenizer.max_word_length))
+
+    def forward(self, P):
+        word_len = P.shape[0]
+        d = torch.norm(P - self.IPrime[-1*word_len:, :word_len].matmul(P), p="fro")
+        d = nn.functional.tanh(d)
+        return d</code></pre>
+<br/>
+<p>
+    Now we can generate a palindrome dataset and run the training loop for this network.
+    (the dataset generation code can be found on github). We will generate the dataset using 
+    only palindromes of length 3,4,5, even though our network can handle words of lengths up to 7 ideally.
+    This way we can see what if network learns to do the reverse operation.
+</p>
+<pre><code class="language-python">
+    dataset = generate_dataset(10000, [3,4,5])
+    tokenizer = CustomTokenizer()
+    X = []
+    for row in dataset:
+        X.append([tokenizer.to_matrix(row[0]), row[1]])
+    
+    
+    # Training loop
+    model = PalindromeNetwork()
+    criterion = nn.MSELoss()
+    optimizer = optim.SGD(model.parameters(), lr=0.01)
+    num_epochs = 7
+    for epoch in range(num_epochs):
+        total_loss = 0
+        for data in X:
+            inputs, label = data
+            label = torch.tensor([label], dtype=torch.float32)
+            
+            # Zero the parameter gradients
+            optimizer.zero_grad()
+            
+            # Forward pass
+            outputs = model(inputs)
+            
+            loss = criterion(outputs, label)
+            loss.backward()
+            optimizer.step()
+            
+            total_loss += loss.item()
+        
+        print(f'Epoch [{epoch+1}/{num_epochs}], Loss: {total_loss/len(X):.4f}')</code></pre>
+<br/>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-4.png" alt="Output of Training" style="width: 80%">
+    <small>Training Output - Learning Reverse Identity</small>
+</div>
+
+<p>As shown in the screenshot above, the model succesfully learns something close enough to the reverse identity matrix.
+    It is not perfect, but it is close enough to be able to solve the palindrome problem. 
+    This shows that the network is able to learn the reverse operation, which is a key part of the algorithm.
+</p>
+<p>
+    However, that is not the whole story. The matrix was only learned for lengths of the matrix that it was exposed to
+    in the training data. It is not able to extrapolate to longer lengths. This means that if we try to give a word
+    with a length outside of the training data, the model will not be able to solve it.
+</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-5.png" alt="Output of Training" style="width: 80%">
+    <small>Extrapolation Failure</small>
+</div>
+<br/>
+<p>
+    There is however a pattern in the learnable parameter matrix itself. If we completed the diagonal line
+    and made it a perfect reverse identity matrix, we would be able to solve the problem for any length.
+    Perhaps we could "learn" this by adding a loss function that penalizes the network for not having uniformity in 
+    the matrix.
+</p>
+
+
+
+
+<h2>Sources</h2>
+<ul>
+    <li>[1] <a target="_blank" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5002356">Solving Mathematical Problems using Large Language Models: a Survey</a></li>
+    <li>[2] <a target="_blank" href="https://domluna.com/blog/gpt-math#needle-in-a-haystack">Needle In a Haystack</a></li>
+    <li>[3] <a target="_blank" href="https://arxiv.org/pdf/2201.11903">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</a></li>
+
+</ul>

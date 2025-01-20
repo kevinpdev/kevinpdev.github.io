@@ -1,17 +1,11 @@
 <!--TEMPLATE:blog.html-->
 
-<h1>Learning Algorithms with Palindromes & Neural Networks</h1>
+<h1>Learning Discrete Algorithms with Palindromes, Neural Networks, & Program Synthesis</h1>
 <p>
-    The palindrome problem is a classic introductory problem in algorithms in computer science. 
+    The palindrome problem is a classic introductory problem in computer science. 
     It involves determining whether a given string is the same when read forwards and backwards.
     For example, the string "racecar" is a palindrome because it reads the same forwards and backwards.
     The string "hello" is not a palindrome because it reads differently forwards and backwards.
-</p>
-
-<p>
-    A simple algorithm to solve palindromes is the two pointer algorithm, where you create a pointer at the start and end of a string,
-    and continuously move them to the middle while checking if they are pointing to the same character. This allows for an
-    O(n) time / O(1) space solution to the problem.
 </p>
 
 <pre><code class="language-python">def is_palindrome(s):
@@ -19,7 +13,7 @@
 
 <p>
     Traditionally, transformers and deep learning architectures in general have struggled with algorithmic thinking [1].
-    On hypothesis is that they memorize solutions to problems rather than learning the underlying algorithm [2]. It is
+    One hypothesis is that they memorize solutions to problems rather than learning the underlying algorithm [2]. It is
     interesting to see how well LLMs can solve certain problems, but can struggle with algorithmic problems. A quick
     test of the palindrome problem on GPT 3.5, GPT 4o, and Gemini 1.5 Flash shows that they all can fail to solve the problem
     if the palindrome is uncommon (unlikely to be found in the training data).
@@ -43,8 +37,8 @@
 
 <h2>Why?</h2>
 <p>
-    I am curious as to why LLMs and deep learning models in general are particularly bad in algorithmic thinking, and
-    want to use this article to explore very simple algorithmic problems and neural network architectures
+    It is curious as to why LLMs and deep learning models in general are particularly bad in algorithmic thinking. This
+    article explores very simple algorithmic problems and neural network architectures
     to see if we can get a neural network to learn the algorithm.
 </p>
 
@@ -121,8 +115,8 @@
     total difference between the word and the reversed word. We will call this d
 </p>
 <div style="text-align: center;">
-    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
-        \sum_{i,j}
+    <math-field style="font-size: 26px;" readonly>d = \sqrt{\sum_{i,j}(P-I'P)_{i,j}^2} = 
+        \sqrt{\sum_{i,j}
         \lparen
         \begin{bmatrix}
         1 & 0 & 0 & 0 \\
@@ -133,15 +127,15 @@
         1 & 0 & 0 & 0 \\
         0 & 1 & 0 & 0 \\
         1 & 0 & 0 & 0 \\
-        \end{bmatrix}\rparen_{i,j}^2
+        \end{bmatrix}\rparen_{i,j}^2}
     </math-field>
-    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
-        \sum_{i,j}
+    <math-field style="font-size: 26px;" readonly>d = \sqrt{\sum_{i,j}(P-I'P)_{i,j}^2} = 
+        \sqrt{\sum_{i,j}
         \begin{bmatrix}
         0 & 0 & 0 & 0 \\
         0 & 0 & 0 & 0 \\
         0 & 0 & 0 & 0 \\
-        \end{bmatrix}_{i,j}^2
+        \end{bmatrix}_{i,j}^2}
     </math-field>
     <br/>
     <math-field style="font-size: 26px;" readonly>d = 0
@@ -176,8 +170,8 @@
     \end{bmatrix}
     </math-field>
     <br/>
-    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
-        \sum_{i,j}
+    <math-field style="font-size: 26px;" readonly>d = \sqrt{\sum_{i,j}(P-I'P)_{i,j}^2} = 
+        \sqrt{\sum_{i,j}
         \lparen
         \begin{bmatrix}
         1 & 0 & 0 & 0 \\
@@ -188,18 +182,18 @@
         0 & 1 & 0 & 0 \\
         0 & 1 & 0 & 0 \\
         1 & 0 & 0 & 0 \\
-        \end{bmatrix}\rparen_{i,j}^2
+        \end{bmatrix}\rparen_{i,j}^2}
     </math-field>
-    <math-field style="font-size: 26px;" readonly>d = \sum_{i,j}(P-I'P)_{i,j}^2 = 
-        \sum_{i,j}
+    <math-field style="font-size: 26px;" readonly>d = \sqrt{\sum_{i,j}(P-I'P)_{i,j}^2} = 
+        \sqrt{\sum_{i,j}
         \begin{bmatrix}
         1 & -1 & 0 & 0 \\
         0 & 0 & 0 & 0 \\
         -1 & 1 & 0 & 0 \\
-        \end{bmatrix}_{i,j}^2
+        \end{bmatrix}_{i,j}^2}
     </math-field>
     <br/>
-    <math-field style="font-size: 26px;" readonly>d = 1^2 + (-1)^2 + 1^2 + (-1)^2 = 4
+    <math-field style="font-size: 26px;" readonly>d = \sqrt{1^2 + (-1)^2 + 1^2 + (-1)^2} = 2
 </div> 
 <br/>
 <p>Based on this example we can see that when d > 0, then the word is not a palindrome. When d=0, the word is a palindrome.</p>
@@ -282,7 +276,7 @@ print("Output for 'saippuakivikauppias': ", net("saippuakivikauppias").item())  
 <ul>
     <li>The most obvious used a reverse identity matrix multiplication operation which tells the network that we need to perform a reverse operation.</li>
     <li>We also do a subtraction between the reversed matrix and the original matrix which biases the algorithm to know that we need to compare those two.</li>
-    <li>We crop the reverse matrix to be able to make a comparision at the length of the word.</li>
+    <li>We also take the norm of the final matrix, which biases the model to know that we are comparing want to measure the magnitude of the comparision.</li>
 </ul>
 
 All of these steps are allowing the network to solve the algorithm in a generalized way, but are
@@ -358,7 +352,9 @@ we can get the network to learn the algorithm itself.
 <p>
     However, that is not the whole story. The matrix was only learned for lengths of the matrix that it was exposed to
     in the training data. It is not able to extrapolate to longer lengths. This means that if we try to give a word
-    with a length outside of the training data, the model will not be able to solve it.
+    with a length outside of the training data, the model will not be able to solve it. This seems obvious, why would
+    backprop would be need to extrapolate to longer lengths if it was not needed in the training data? There will never 
+    be an error that has a gradient flow to those parameters due to the matrix cropping procedure that we use.
 </p>
 <div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
     <img src="/assets/palindrome-5.png" alt="Output of Training" style="width: 80%">
@@ -368,17 +364,136 @@ we can get the network to learn the algorithm itself.
 <p>
     There is however a pattern in the learnable parameter matrix itself. If we completed the diagonal line
     and made it a perfect reverse identity matrix, we would be able to solve the problem for any length.
-    Perhaps we could "learn" this by adding a loss function that penalizes the network for not having uniformity in 
-    the matrix.
+    Before thinking of ways to get the model to extrapolate, we can try to see if we debias the model even 
+    more and still find patterns in the matrix like this.
 </p>
 
+<br/>
+<br/>
+<h3>Expirement 2: Generalizing the Norm</h3>
+<p>
+    Instead of manually taking the frobius norm, we would like to use fully connected layers and let the model figure that out,
+    to make the model architecture more generalized.
+</p>
+<pre><code class="language-python">class PalindromeNetwork2(nn.Module):
+    def __init__(self):
+        super(PalindromeNetwork2, self).__init__()
+        self.tokenizer = CustomTokenizer() 
+        self.IPrime = nn.Parameter(torch.zeros(self.tokenizer.max_word_length,self.tokenizer.max_word_length))
+        self.fc2 = nn.Linear(26,26)
+        self.fc3 = nn.Linear(26,1)
 
 
+    def forward(self, P):
+        word_len = P.shape[0]
+        d = self.IPrime[-1*word_len:, :word_len].matmul(P)
+        out = P + d
+        out = self.fc2(out)
+        out = nn.functional.relu(out)
+        out = self.fc3(out)
+        out = nn.functional.sigmoid(out)
+        return out</code></pre>
+<p>
+    Using this architecture, the model still solves the problem, The I' matrix still resembles a reverse
+     identity matrix (with -1s) but it is "less clean" - harder to tell just by looking at it.
+</p>
+
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-6.png" alt="Output of Training" style="width: 80%">
+    <small>Problem Solved - Without Regularization, Less Obvious Patterns in I'</small>
+</div>
+
+<br/>
+<h3>Regularizing I'</h3>
+<p>
+    In order to attempt to get the model to learn a cleaner reverse identity matrix, we can try to regularize the I' matrix
+    so that the entries are close to 1 or 0. We can do this by adding a regularization term to the loss function.
+</p>
+<p>We will use the following term to regularize the loss:</p>
+<br/>
+
+<div style="text-align: center;">
+<math-field style="font-size: 26px;" readonly>
+    \[
+    \sum_{ij}(I' * (1 - I'))^2
+    \]
+</math-field>
+</div>
+<br/>
+We do this so that the entries in I' are close to 0 or 1, which would make it more likely to be a reverse identity matrix.
+This could also be interesting in a more generalized sense, to encourage the model to learn a binary (discretized) output.
+<br/>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-8.png" alt="Regularization Function" style="width: 70%">
+    <small>Regularization Function</small>
+</div>
+<br/>
+<p>We can add it to the code with the following:</p>
+<pre><code class="language-python">loss = criterion(outputs, label)
+
+# Add regularization to encourage outputs closer to 0 or 1
+regularization = 0.01 * torch.sum((model.IPrime * (1 - model.IPrime))**2)
+loss += regularization</code></pre>
+
+<br/>
+<p>
+    After training the model with this regularization, we can see that the model is able to solve the problem, and the I' matrix
+    is more likely to be a reverse identity matrix.
+</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-7.png" alt="Output of Training" style="width: 80%">
+    <small>Problem Solved - With Regularization</small>
+</div>
+
+<br/>
+<br/>
+<h2>Extrapolating with Program Synthesis / Rule Mining </h2>
+<p>
+    One thing that we can do with a binary and discrete output is use a more traditional algorithm to extrapolate to new lengths.
+    In this case, we are trying to "expand" the I' matrix to longer lengths, with the same pattern that we have learned with our
+    training data.
+</p>
+<p>
+    We could use discrete rule mining or program synthesis to come up with the following rule:
+</p>
+<pre><code class="language-python">I''[i][j] == 1 if i == j else I''[i][j] == 0</code></pre>
+<br/>
+
+<p>
+    We can then modify the intermediate parameter using this algorithm rather than backpropagating through the network.
+</p>
+
+<br/>
+<p>After making these changes, we can see that our model is now able to extrapolate to new lengths that it has never seen before.</p>
+<div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
+    <img src="/assets/palindrome-9.png" alt="Output of Training" style="width: 80%">
+    <small>Extrapolation</small>
+</div>
+
+
+<h2>Thoughts / Analysis</h2>
+<p>
+    This article is primarily just a thought experiment to brainstorm how we can merge discrete program search with deep learning algorithms.
+    It was inspired by the idea of combining program synthesis and deep learning from the ARC challenge [4].
+</p>
+<p>To extend this idea further, we would need to try and come up with a network that could take input / output pairs of lots of different rule 
+    base algorithms and do the following:
+</p>
+<ol>
+    <li>1. Create a neural network that can solve the problem with highly regularized / discrete "intermediate" layers</li>
+    <li>2. After the model is trained, quantize the intermediate layers.</li>
+    <li>3. Use discrete rule mining or program synthesis to extrapolate the learned algorithm to new lengths and permutations.</li>
+    <li>4. Apply the rule to the entire intermediate matrix or data strucutre to extrapolate.</li>
+</ol>
+<p>
+    Hopefully this article has been an interesting thought expieriment. I will hopefully apply this idea to other problems in the future and
+    see if there is any merit to it. You can find the code for this project on my <a target="_blank" href="https://github.com/kevinpdev/kevinpdev.github.io/blob/main/notebooks/nn-palindrome.ipynb">github</a>.
+</p>
 
 <h2>Sources</h2>
 <ul>
     <li>[1] <a target="_blank" href="https://papers.ssrn.com/sol3/papers.cfm?abstract_id=5002356">Solving Mathematical Problems using Large Language Models: a Survey</a></li>
     <li>[2] <a target="_blank" href="https://domluna.com/blog/gpt-math#needle-in-a-haystack">Needle In a Haystack</a></li>
     <li>[3] <a target="_blank" href="https://arxiv.org/pdf/2201.11903">Chain-of-Thought Prompting Elicits Reasoning in Large Language Models</a></li>
-
+    <li>[4] <a target="_blank" href="https://arcprize.org/arc">ARC Prize</a></li>
 </ul>

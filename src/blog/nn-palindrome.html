@@ -456,8 +456,13 @@ loss += regularization</code></pre>
 <p>
     We could use discrete rule mining or program synthesis to come up with the following rule:
 </p>
-<pre><code class="language-python">I''[i][j] == 1 if i == j else I''[i][j] == 0</code></pre>
+<pre><code class="language-python">I''[i][j] == 1 if height(I'' - i) == j else I''[i][j] == 0</code></pre>
 <br/>
+
+<p>
+    Here is a very basic program synthesis algorithm that is able to find that rule. In practice we would want a robust program 
+    synthesis algorithm that searches for patterns in the matrix from the in-distribution rows/columns.
+</p>
 
 <p>
     We can then modify the intermediate parameter using this algorithm rather than backpropagating through the network.
@@ -465,8 +470,75 @@ loss += regularization</code></pre>
 
 <br/>
 <p>After making these changes, we can see that our model is now able to extrapolate to new lengths that it has never seen before.</p>
+<pre><code class="language-python">def synthesize_rule(target_matrix, in_distribution_indices):
+    def equality_condition(a, b):
+        return a == b
+    def reverse_equality_condition(a, b):
+        return target_matrix.shape[0] - a == b
+    def inequality_condition(a, b):
+        return a != b
+    def greater_than_condition(a, b):
+        return a > b
+    def less_than_condition(a, b):
+        return a < b
+    # ... continue with a comprehensive DSL of conditions
+
+    possible_conditions = [
+        equality_condition,
+        reverse_equality_condition,
+        inequality_condition,
+        greater_than_condition,
+        less_than_condition,
+        # ... add more conditions as needed
+    ]
+
+    # Perform a very basic search for a condition that holds for all elements
+    # This is a placeholder for a more sophisticated search algorithm
+    for condition in possible_conditions:
+        condition_holds = True
+        for i in range(target_matrix.shape[0]):
+            for j in range(target_matrix.shape[1]):
+
+                # Skip elements not in the in-distribution indices - they will not contain
+                # any information about the rule
+                if i not in in_distribution_indices or j not in in_distribution_indices:
+                    continue
+
+                # Check if the condition holds for all elements that are in-distribution
+                if target_matrix[i][j] == 1 and not condition(i, j):
+                    condition_holds = False
+                    break
+                if target_matrix[i][j] == 0 and condition(i, j):
+                    condition_holds = False
+                    break
+        if condition_holds:
+            print(f"Found condition: {condition.__name__}")
+            return condition
+    return None
+
+
+# Get I'
+discretized_matrix = model.IPrime.detach().numpy()
+
+# Round the values to 0 or 1
+discretized_matrix[discretized_matrix < 0.5] = 0
+discretized_matrix[discretized_matrix >= 0.5] = 1
+
+condition_rule = synthesize_rule(model.IPrime.detach().numpy(), [3,4,5])
+with torch.no_grad():
+    for i in range(model.IPrime.shape[0]):
+        for j in range(model.IPrime.shape[1]):
+            if condition_rule(i, j):
+                model.IPrime[i][j] = 1
+            else:
+                model.IPrime[i][j] = 0
+
+
+print(model(tokenizer.to_matrix("abbba")))
+print(model(tokenizer.to_matrix("abbbba")))</code></pre>
+
 <div style="display:flex; ;justify-content: center;align-items: center;flex-direction: column;">
-    <img src="/assets/palindrome-9.png" alt="Output of Training" style="width: 80%">
+    <img src="/assets/palindrome-10.png" alt="Output of Training" style="width: 80%">
     <small>Extrapolation</small>
 </div>
 

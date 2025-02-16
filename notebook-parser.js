@@ -89,6 +89,7 @@ exports.parseNotebook = function (inputPath) {
   </head>
   <body>
   <div style="max-width: 900px; overflow-y:auto;margin:auto;">
+  <a href="/index.html">..</a><br/>
   ${htmlContent}
   </div>
   <script>

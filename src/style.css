@@ -123,6 +123,7 @@ li {
   margin-bottom: 0.5rem;
   padding-left: 0.5rem;
   position: relative;
+  font-size: 1rem;
   list-style-type: disc;
 }
 

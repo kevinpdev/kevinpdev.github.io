@@ -21,6 +21,7 @@ code {
   margin: 0;
   padding: 0;
   list-style: none;
+  font-size: 14px;
 }
 
 body {
@@ -48,6 +49,7 @@ h1 {
   font-weight: 700;
   border-bottom: 2px solid #ddd;
   padding-bottom: 0.5rem;
+  margin-top: 2rem;
 }
 
 h2 {
@@ -62,8 +64,16 @@ h3 {
   margin-top: 1.5rem;
 }
 
+h4 {
+  font-size: 1.25rem;
+  font-weight: 400;
+  margin-top: 1.5rem;
+}
+
 p {
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
   font-family: "Roboto Mono", sans-serif;
 }
 
@@ -156,4 +166,8 @@ footer {
 .blog-link {
   color: gray;
   cursor: pointer;
+}
+
+#menubar {
+  display: none;
 }

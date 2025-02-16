@@ -1,11 +1,15 @@
 const fs = require("fs");
 const path = require("path");
-
+const { parseNotebook } = require("./notebook-parser");
 // Function to get all .html files in the src/ directory
 function getHtmlFiles(dir) {
   return fs
     .readdirSync(dir)
     .filter((file) => file.endsWith(".html") || file.endsWith(".css"));
+}
+
+function getHtmlNotebookFiles(dir) {
+  return fs.readdirSync(dir).filter((file) => file.endsWith(".ipynb"));
 }
 
 const srcDir = path.join(__dirname, "src");
@@ -42,6 +46,7 @@ for (const file of htmlFiles) {
 // Loop through each HTML file in the src/blog directory
 const blogDir = path.join(srcDir, "blog");
 const blogFiles = getHtmlFiles(blogDir);
+const notebookFiles = getHtmlNotebookFiles(blogDir);
 
 console.log("HTML files in src/blog/:", blogFiles);
 
@@ -68,6 +73,20 @@ for (const file of blogFiles) {
   } else {
     console.error("Template file not found in blog/index.html");
   }
+}
+
+// Loop through each notebook file in the src/blog directory
+for (const file of notebookFiles) {
+  console.log(`Building blog/${file}...`);
+  const filePath = path.join(blogDir, file);
+  const html = parseNotebook(filePath);
+
+  const newFileName = file.replace(".ipynb", ".html");
+
+  // Ensure the dist/blog directory exists
+  fs.mkdirSync(path.join(distDir, "blog"), { recursive: true });
+  // Write new file to dist/blog/file
+  fs.writeFileSync(path.join(distDir, "blog", newFileName), html);
 }
 
 // Copy assets folder to dist directory

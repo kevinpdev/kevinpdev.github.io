@@ -88,7 +88,7 @@ exports.parseNotebook = function (inputPath) {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
   </head>
   <body>
-  <div style="max-width: 900px; overflow-y:auto;margin:auto;">
+  <div style="max-width: 900px; overflow-y:auto;overflow-x:hidden;margin:auto;">
   <a href="/index.html">..</a><br/>
   ${htmlContent}
   </div>
